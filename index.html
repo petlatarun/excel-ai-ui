@@ -38,6 +38,17 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #downloadBtn {
+            background: #2196F3;
+            margin-top: 15px;
+            display: none;
         }
 
         #progressBar {
@@ -45,12 +56,20 @@
             background: #ddd;
             margin-top: 20px;
             display: none;
+            border-radius: 5px;
         }
 
         #progress {
             height: 20px;
             width: 0%;
             background: #4CAF50;
+            border-radius: 5px;
+        }
+
+        #status {
+            margin-top: 10px;
+            font-size: 14px;
+            color: gray;
         }
 
         #history {
@@ -83,7 +102,9 @@
 
     <div id="status"></div>
 
-    <a id="downloadLink" style="display:none;">⬇ Download File</a>
+    <button id="downloadBtn" onclick="downloadFile()">
+        ⬇ Download Processed File
+    </button>
 
     <div id="history">
         <h4>📜 History</h4>
@@ -92,11 +113,12 @@
 
 <script>
 let selectedFile = null;
+let downloadUrl = null;
 
 const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
 
-// Click opens file picker
+// Click select
 dropZone.onclick = () => fileInput.click();
 
 fileInput.onchange = (e) => {
@@ -132,10 +154,10 @@ async function uploadFile() {
     const progress = document.getElementById("progress");
     const progressBar = document.getElementById("progressBar");
     const status = document.getElementById("status");
-    const link = document.getElementById("downloadLink");
+    const downloadBtn = document.getElementById("downloadBtn");
 
     progressBar.style.display = "block";
-    link.style.display = "none";
+    downloadBtn.style.display = "none";
 
     let percent = 0;
 
@@ -162,14 +184,25 @@ async function uploadFile() {
     progress.style.width = "100%";
     status.innerText = "Completed ✅";
 
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
+    if (!response.ok) {
+        alert("Error processing file");
+        return;
+    }
 
-    link.href = url;
-    link.download = "output.xlsx";
-    link.style.display = "block";
+    const blob = await response.blob();
+    downloadUrl = window.URL.createObjectURL(blob);
+
+    downloadBtn.style.display = "block";
 
     saveHistory(selectedFile.name);
+}
+
+// Download function
+function downloadFile() {
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = "output.xlsx";
+    a.click();
 }
 
 // Save history
